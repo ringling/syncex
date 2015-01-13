@@ -9,11 +9,18 @@ defmodule Syncex.Mixfile do
   end
 
   def application do
-    [applications: [:logger],
+    [applications: [:logger, :couchex, :couchbeam, :httpotion],
      mod: {Syncex, []}]
   end
 
   defp deps do
-    []
+    [
+      {:ibrowse, github: "cmullaparthi/ibrowse", tag: "v4.1.0"},
+      {:httpotion, "~> 1.0.0"},
+      {:couchex, github: "ringling/couchex"},
+      {:poison, github: "devinus/poison"},
+      {:timex, "~> 0.13.3"},
+      {:dotenv, "~> 0.0.4"}
+    ]
   end
 end
