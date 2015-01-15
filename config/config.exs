@@ -1,13 +1,23 @@
 use Mix.Config
 
 config :logger,
-  backends: [{LoggerFileBackend, :error_log}, :console],
+  backends: [
+      {LoggerFileBackend, :error_log},
+      {LoggerFileBackend, :info_log},
+      {ErrbitBackend, :error_log},
+      :console
+    ],
   level: :debug,
   format: "$time $metadata[$level] $message\n"
 
 config :logger, :error_log,
   level: :warn,
   path: "logs/error.log",
+  format: "$date $time [$level] $metadata$message\n"
+
+config :logger, :info_log,
+  level: :info,
+  path: "logs/info.log",
   format: "$date $time [$level] $metadata$message\n"
 
 config :logger, :console,
