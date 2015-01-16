@@ -1,6 +1,7 @@
 /rel
 /_build
 /deps
+/logs
 .env
 erl_crash.dump
 *.ez
