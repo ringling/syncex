@@ -6,6 +6,7 @@ defmodule Syncex.SequenceServerTest do
     {:ok, sequence_server} = Syncex.Sequence.Server.start_link
     {:ok, sequence_server: sequence_server}
   end
+
   test "get sequence number", %{sequence_server: sequence_server} do
     assert {:ok, 223} = Server.force_set_sequence(sequence_server, 223)
     assert 223 = Server.get_sequence(sequence_server)
