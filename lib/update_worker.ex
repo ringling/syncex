@@ -24,7 +24,7 @@ defmodule Syncex.UpdateWorker do
 
   def handle_cast({:update, {event_doc, seq_number} }, state) do
     Logger.debug "#{event_doc.country}: Upserting #{inspect event_doc.location_uuid} - seq: #{seq_number} - evt_date: #{event_doc.created_at}"
-    {event_doc.uuid, event_doc.country}
+    {event_doc.location_uuid, event_doc.country}
       |> LocationService.fetch_location
       |> add_metadata(event_doc, seq_number)
       |> update_location
