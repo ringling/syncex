@@ -1,28 +1,47 @@
 defmodule LocationService do
   import CouchHelper
+  require Logger
 
-  def fetch_location({country, uuid}) do
+  def fetch_location({uuid, country}) do
     api_key = System.get_env("LB_INTERNAL_API_KEY")
     url = "#{api_url(country, uuid)}"
     case execute_get(url, api_key) do
       {:error, err} ->
         {:error, err}
       location ->
-        location = location
-          |> Map.put(:uuid, uuid)
-          |> Map.put(:country, country)
-        { :ok, location }
+        Syncex.Sanitizer.sanitize(%{location: location})
+          |> enrich(country, uuid, location["postal_code"])
     end
   end
 
   def max_sequence_number do
-    ["dk","se"]
-      |> Enum.map( fn(cntry)->db_name(cntry) |> database |> fetch_stats |> max end)
+    max = location_types
+      |> Enum.map( fn(type)->db_name(type) |> database |> fetch_stats |> max end)
       |> Enum.max
+    max
   end
 
+  defp location_types do
+    System.get_env["LOCATION_TYPES"] |> String.split(",")
+  end
+
+  # Ignore danish Skåne locations
+  defp enrich(_, "dk", _, postal_code) when byte_size(postal_code) > 4 do
+    { :error, :danish_skaane_location }
+  end
+
+  defp enrich(location, country, uuid, postal_code) do
+    pd = Syncex.Area.Server.postal_district(String.to_atom(country),postal_code)
+    location = location
+      |> Map.put(:uuid, uuid)
+      |> Map.put(:country, country)
+      |> Map.merge(pd)
+    { :ok, location }
+  end
+
+  defp max({:error, :not_found}), do: 0
+  defp max(stats) when map_size(stats)==0, do: 0
   defp max(stats), do: stats.max
-  defp max(_), do: 0
   defp fetch_stats(database) do
     case Couchex.fetch_view(database, {"lists","max_seq_number"},[]) do
        {:ok, resp} ->
@@ -32,9 +51,11 @@ defmodule LocationService do
     end
   end
 
-  defp db_name(country) do
-    cntry = country |> String.upcase
-    System.get_env("#{cntry}_COUCH_LOCATION_DB")
+  defp db_name(type) do
+    type <> "_" <> System.get_env("COUCH_LOCATIONS_DB")
+  end
+  defp db_name do
+    System.get_env("COUCH_LOCATIONS_DB")
   end
   defp parse_stats([]), do: %{}
   defp parse_stats([{ [_key,{"value", values}] }]) do
