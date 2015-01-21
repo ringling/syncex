@@ -3,6 +3,7 @@ defmodule Syncex do
 
   @update_worker Syncex.UpdateWorker
   @sequence Syncex.Sequence.Server
+  @area Syncex.Area.Server
   @location_service LocationService
 
   def start(_type, _args) do
@@ -11,6 +12,7 @@ defmodule Syncex do
     Dotenv.load!
 
     children = [
+      worker(Syncex.Area.Server, [@area]),
       worker(GenServer, [@update_worker, %{sequence: @sequence}, [name: @update_worker]]),
       worker(Syncex.Sequence.Server, [@sequence]),
       worker(Syncex.ChangeListener, [{@update_worker, @sequence}])
