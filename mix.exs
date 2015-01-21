@@ -20,7 +20,8 @@ defmodule Syncex.Mixfile do
       {:couchex, github: "ringling/couchex"},
       {:poison, github: "devinus/poison"},
       {:timex, "~> 0.13.3"},
-      {:dotenv, "~> 0.0.4"}
+      {:dotenv, "~> 0.0.4"},
+      {:xml_builder, "~> 0.0.5"}
     ]
   end
 end

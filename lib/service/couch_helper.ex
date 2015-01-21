@@ -2,7 +2,13 @@ defmodule CouchHelper do
   require Logger
 
   def event_db do
-    { :ok, db } = Couchex.open_db(server, "events")
+    { :ok, db } = Couchex.open_db(server, System.get_env("COUCH_EVENTS_DB"))
+    db
+  end
+
+  def postal_areas_db(country) do
+    database_name = "#{country}_#{System.get_env("COUCH_POSTAL_AREAS_DB")}"
+    { :ok, db } = Couchex.open_db(server, database_name)
     db
   end
 
@@ -38,8 +44,9 @@ defmodule CouchHelper do
   def couch_url(country, location) do
     server_url = System.get_env("COUCH_SERVER_URL")
     country = country |> String.upcase
-    country_db = System.get_env("#{country}_COUCH_LOCATION_DB")
-    url = "#{server_url}/#{country_db}/#{location.uuid}"
+    type = location["type"] |> String.downcase
+    locations_db = type <> "_" <> System.get_env("COUCH_LOCATIONS_DB")
+    url = "#{server_url}/#{locations_db}/#{location.uuid}"
     add_revision(url)
   end
 
@@ -80,12 +87,16 @@ defmodule CouchHelper do
           IO.inspect body |> Poison.decode!
           { :ok, :updated }
         %HTTPotion.Response{status_code: 409} ->
+          Logger.error "CONFLICT Location(#{country}) #{location.uuid}"
           {:error, :conflict}
         %HTTPotion.Response{status_code: 404} ->
+          Logger.error "NOT FOUND Location(#{country}) #{location.uuid}"
           {:error, :not_found}
         %HTTPotion.Response{status_code: 400} ->
+          Logger.error "INVALID REQUEST Location(#{country}) #{location.uuid}"
           {:error, :invalid_request}
         %HTTPotion.Response{status_code: 500} ->
+          Logger.error "SERVER ERROR Location(#{country}) #{location.uuid}"
           {:error, :server_error}
         error ->
           {:error, "Unknown: #{inspect error}"}
@@ -102,7 +113,6 @@ defmodule CouchHelper do
   defp action({ :error,       err }), do: { :error,  err }
   defp action({ :no_revision, url }), do: { :create, url }
   defp action({ :revision,    url }), do: { :update, url }
-
 
   defp _response({:error, msg }),  do: {:error, "couchdb"}
   defp _response({:ok,    _   }),    do: {:ok, "couchdb"}
