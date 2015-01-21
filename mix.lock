@@ -1,4 +1,5 @@
-%{"couchbeam": {:git, "git://github.com/benoitc/couchbeam.git", "a20517d415486dea4185781483361e0188289d85", [tag: "1.1.6"]},
+%{"apex": {:hex, :apex, "0.3.2"},
+  "couchbeam": {:git, "git://github.com/benoitc/couchbeam.git", "a20517d415486dea4185781483361e0188289d85", [tag: "1.1.6"]},
   "couchex": {:git, "git://github.com/ringling/couchex.git", "781c6fcc7f005a19d50e5d1ff6ba6e867bf3af48", []},
   "dotenv": {:hex, :dotenv, "0.0.4"},
   "hackney": {:git, "git://github.com/benoitc/hackney.git", "ea5ba22c89f642ccbe16ddd108fc6cc3488646d1", [tag: "1.0.4"]},
@@ -9,4 +10,5 @@
   "oauth": {:git, "git://github.com/refuge/erlang-oauth.git", "d50a78688b6b489ae0a57799519b88f3b9f81401", [ref: "master"]},
   "poison": {:git, "git://github.com/devinus/poison.git", "29bd02903f536abad14759c7946bb656625d8d5f", []},
   "ssl_verify_hostname": {:git, "https://github.com/benoitc/ssl_verify_hostname", "3e7179789603057e3ec1867802c74c7bf6f8528a", [tag: "1.0.0"]},
-  "timex": {:hex, :timex, "0.13.3"}}
+  "timex": {:hex, :timex, "0.13.3"},
+  "xml_builder": {:hex, :xml_builder, "0.0.5"}}
