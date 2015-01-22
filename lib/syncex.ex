@@ -11,7 +11,10 @@ defmodule Syncex do
 
     Dotenv.load!
 
+    ten_minutes = 60*1000*10
+
     children = [
+      worker(Syncex.DmsNotifier, [ten_minutes]),
       worker(Syncex.Area.Server, [@area]),
       worker(GenServer, [@update_worker, %{sequence: @sequence}, [name: @update_worker]]),
       worker(Syncex.Sequence.Server, [@sequence]),
