@@ -18,6 +18,9 @@ SE_URL=http://www.lokalbasen.se
 LB_INTERNAL_API_URL=api/internal/locations
 LB_INTERNAL_API_KEY=...
 LOCATION_TYPES=lease,user,investment
+ERRBIT_API_KEY=...
+DEADMANS_SNITCH_URL=...
+
 ```
 
 ### CouchDB
