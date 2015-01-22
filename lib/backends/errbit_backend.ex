@@ -10,8 +10,7 @@ defmodule ErrbitBackend do
     {Logger, msg, timestamp, stackinfo} = info
     timestamp = timestamp |> Date.from("GMT") |> DateFormat.format!("{ISO}")
     xml = xml(msg, stackinfo)
-    url = "https://errbit.services.lokalebasen.dk/notifier_api/v2/notices"
-    IO.inspect HTTPotion.post(url, xml,["Content-Type": "application/xml"])
+    HTTPotion.post(errbit_url, xml,["Content-Type": "application/xml"])
     {:ok, parent}
   end
 
@@ -43,9 +42,13 @@ defmodule ErrbitBackend do
 
   end
 
+  defp errbit_url do
+    uri = URI.parse(System.get_env("ERRBIT_URL"))
+    "#{uri.scheme}://#{uri.host}/notifier_api/v2/notices"
+  end
 
   defp api_key do
-    System.get_env("ERRBIT_API_KEY")
+    URI.parse(System.get_env("ERRBIT_URL")).userinfo
   end
 
   @doc """
@@ -120,7 +123,7 @@ defmodule ErrbitBackend do
   </error>
   """
   defp error(message, stackinfo) do
-    {function, 0} = stackinfo[:function]
+    {function, _} = stackinfo[:function]
     {:error, nil,
       [
         {:class, nil, stackinfo[:module]},
