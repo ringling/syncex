@@ -9,7 +9,7 @@ defmodule Syncex.Mixfile do
   end
 
   def application do
-    [applications: [:logger, :couchex, :couchbeam, :httpotion],
+    [applications: [:logger, :couchex, :couchbeam, :httpotion, :jsx, :dotenv],
      mod: {Syncex, []}]
   end
 
@@ -21,7 +21,8 @@ defmodule Syncex.Mixfile do
       {:poison, github: "devinus/poison"},
       {:timex, "~> 0.13.3"},
       {:dotenv, "~> 0.0.4"},
-      {:xml_builder, "~> 0.0.5"}
+      {:xml_builder, "~> 0.0.5"},
+      {:exrm, "~> 0.14.16"}
     ]
   end
 end
