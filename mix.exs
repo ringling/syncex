@@ -9,6 +9,14 @@ defmodule Syncex.Mixfile do
   end
 
   def application do
+    _application(Mix.env)
+  end
+
+  defp _application(:test) do
+    [applications: [:logger, :couchex, :couchbeam, :httpotion, :jsx, :dotenv]]
+  end
+
+  defp _application(_) do
     [applications: [:logger, :couchex, :couchbeam, :httpotion, :jsx, :dotenv],
      mod: {Syncex, []}]
   end
