@@ -76,12 +76,11 @@ defmodule ErrbitBackend do
   </server-environment>
   """
   defp server_environment do
-    env = Mix.env |> Atom.to_string
     {:"server-environment", nil,
       [
-        {:"project-root", nil, Mix.Project.app_path},
+        {:"project-root", nil, Application.get_env(:syncex, :app_path)},
         {:"environment-name", nil, Mix.env},
-        {:"app-version", nil, Mix.Project.config[:version]}
+        {:"app-version", nil, Application.get_env(:syncex, :version)}
       ]
     }
   end
@@ -123,17 +122,28 @@ defmodule ErrbitBackend do
   </error>
   """
   defp error(message, stackinfo) do
-    {function, _} = stackinfo[:function]
+    function = fetch_function(stackinfo[:function])
+    module = fetch_module(stackinfo[:module])
+    line = fetch_line(stackinfo[:line])
     {:error, nil,
       [
         {:class, nil, stackinfo[:module]},
         {:message, nil, message},
         {:backtrace, nil, [
-            {:line, %{method: function, file: stackinfo[:module], number: stackinfo[:line]}, nil}
+            {:line, %{method: function, file: module, number: line}, nil}
           ]
         }
       ]
     }
   end
+
+  defp fetch_function({function, _}), do: function
+  defp fetch_function(_),             do: "Unknown function"
+
+  defp fetch_module({module, _}), do: module
+  defp fetch_module(_),           do: "Unknown module"
+
+  defp fetch_line({line, _}), do: line
+  defp fetch_line(_),         do: "Unknown line"
 
 end

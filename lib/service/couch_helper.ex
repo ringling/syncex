@@ -126,6 +126,7 @@ defmodule CouchHelper do
         %HTTPotion.Response{status_code: 404, headers: headers} ->
           { :no_revision, url }
         error ->
+          Logger.error("Error during revision '#{url}' add: #{inspect error}")
           {:error, error}
       end
     rescue

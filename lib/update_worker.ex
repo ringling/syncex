@@ -60,9 +60,8 @@ defmodule Syncex.UpdateWorker do
     	|> handle_sequence_response(state)
   end
 
-  defp update_sequence({:error, msg}, seq_number, state) do
-    # Add location to error queue
-    Logger.error("Error during update: '#{msg}' - #{seq_number}")
+  defp update_sequence({:error, msg }, seq_number, state) do
+    # TODO: Add location to error queue
     state.sequence
       |> Syncex.Sequence.Server.set_sequence(seq_number)
       |> handle_sequence_response(state)
