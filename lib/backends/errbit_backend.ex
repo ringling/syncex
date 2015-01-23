@@ -79,7 +79,7 @@ defmodule ErrbitBackend do
     {:"server-environment", nil,
       [
         {:"project-root", nil, Application.get_env(:syncex, :app_path)},
-        {:"environment-name", nil, Mix.env},
+        {:"environment-name", nil, Application.get_env(:syncex, :environment)},
         {:"app-version", nil, Application.get_env(:syncex, :version)}
       ]
     }
