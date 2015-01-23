@@ -5,6 +5,7 @@ defmodule Syncex do
   @sequence Syncex.Sequence.Server
   @area Syncex.Area.Server
   @location_service LocationService
+  @error_stack Syncex.ErrorStack
 
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
@@ -14,6 +15,7 @@ defmodule Syncex do
     ten_minutes = 60*1000*10
 
     children = [
+      worker(Syncex.ErrorStack, [@error_stack]),
       worker(Syncex.DmsNotifier, [ten_minutes]),
       worker(Syncex.Area.Server, [@area]),
       worker(GenServer, [@update_worker, %{sequence: @sequence}, [name: @update_worker]]),
