@@ -26,9 +26,9 @@ defmodule Syncex.UpdateWorker do
     Logger.debug "#{event_doc.country}: Upserting #{inspect event_doc.location_uuid} - seq: #{seq_number} - evt_date: #{event_doc.created_at}"
     {event_doc.location_uuid, event_doc.country}
       |> LocationService.fetch_location
-      |> add_metadata(event_doc, seq_number)
+      |> add_metadata({event_doc, seq_number})
       |> update_location
-      |> update_sequence(seq_number, state)
+      |> update_sequence({event_doc, seq_number}, state)
 
     Logger.info "Completed #{inspect event_doc.location_uuid} - seq #{seq_number}"
     { :noreply, state }
@@ -37,8 +37,8 @@ defmodule Syncex.UpdateWorker do
   defp update_location({:error, err_message }), do: {:error, err_message }
   defp update_location(loc_doc), do:  execute_post(loc_doc)
 
-  defp add_metadata({ :error, err_message }, _, _), do: {:error, err_message }
-  defp add_metadata({ :ok, location }, event_doc,  seq_number) do
+  defp add_metadata({ :error, err_message }, _), do: {:error, err_message }
+  defp add_metadata({ :ok, location }, {event_doc, seq_number}) do
     Logger.debug "'#{location["address_line1"]}, #{location["postal_code"]} #{location["postal_name"]}' -> #{location["_links"]["self"]["href"]}"
     metadata = %{
       type: "location_event_metadata",
@@ -54,14 +54,14 @@ defmodule Syncex.UpdateWorker do
     { location, event_doc }
   end
 
-  defp update_sequence({ :ok, _status }, seq_number, state) do
+  defp update_sequence({ :ok, _status }, {event_doc, seq_number}, state) do
     state.sequence
       |> Syncex.Sequence.Server.set_sequence(seq_number)
     	|> handle_sequence_response(state)
   end
 
-  defp update_sequence({:error, msg }, seq_number, state) do
-    # TODO: Add location to error queue
+  defp update_sequence({:error, err_msg }, {event_doc, seq_number}, state) do
+    Syncex.ErrorStack.push(%{ data: {event_doc, seq_number}, error: {:error, err_msg }})
     state.sequence
       |> Syncex.Sequence.Server.set_sequence(seq_number)
       |> handle_sequence_response(state)
