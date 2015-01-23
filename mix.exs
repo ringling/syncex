@@ -12,7 +12,7 @@ defmodule Syncex.Mixfile do
     [
       mod: {Syncex, []},
       applications: [:logger, :couchex, :couchbeam, :httpotion, :jsx, :dotenv, :poison, :timex],
-      env: [version: Mix.Project.config[:version], app_path: Mix.Project.app_path]
+      env: [version: Mix.Project.config[:version], app_path: Mix.Project.app_path, environment: Mix.env]
    ]
   end
 
