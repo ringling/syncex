@@ -8,6 +8,11 @@ defmodule Syncex.Sequence.Server do
     GenServer.start_link(__MODULE__, last_seq)
   end
 
+  def start_link(seq_number) when is_number(seq_number) do
+    last_seq = 0
+    GenServer.start_link(__MODULE__, last_seq)
+  end
+
   def start_link(name) do
     last_seq = fetch_latest_sequence_number
     GenServer.start_link(__MODULE__, last_seq, name: name)
