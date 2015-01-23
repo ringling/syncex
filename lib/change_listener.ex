@@ -2,15 +2,14 @@ defmodule Syncex.ChangeListener do
  use GenServer
  require Logger
 
-
   @one_minute 60000
   ## Client API
 
   @doc """
   Starts ChangeListener.
   """
-  def start_link({worker, sequence}, opts \\ []) do
-    GenServer.start_link(__MODULE__, {worker, sequence}, opts)
+  def start_link(name, state) do
+    GenServer.start_link(__MODULE__, state, name: name)
   end
 
   ## Server Callbacks
@@ -63,7 +62,7 @@ defmodule Syncex.ChangeListener do
 
     case Syncex.Event.from_doc(doc) do
       {:error, :no_match} ->
-        Logger.error "Error doc #{inspect doc}"
+        Logger.error "Couldn't match doc: #{inspect doc}"
       doc ->
         state.worker
           |> Syncex.UpdateWorker.update(doc, seq)

@@ -6,6 +6,7 @@ defmodule Syncex do
   @area Syncex.Area.Server
   @location_service LocationService
   @error_stack Syncex.ErrorStack
+  @change_listener Syncex.ChangeListener
 
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
@@ -20,7 +21,7 @@ defmodule Syncex do
       worker(Syncex.Area.Server, [@area]),
       worker(GenServer, [@update_worker, %{sequence: @sequence}, [name: @update_worker]]),
       worker(Syncex.Sequence.Server, [@sequence]),
-      worker(Syncex.ChangeListener, [{@update_worker, @sequence}])
+      worker(Syncex.ChangeListener, [@change_listener, {@update_worker, @sequence}])
     ]
 
     opts = [strategy: :one_for_one, name: Syncex.Supervisor]
