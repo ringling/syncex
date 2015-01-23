@@ -3,7 +3,7 @@ defmodule Syncex.SequenceServerTest do
   alias Syncex.Sequence.Server
 
   setup do
-    {:ok, sequence_server} = Syncex.Sequence.Server.start_link
+    {:ok, sequence_server} = Syncex.Sequence.Server.start_link(0)
     {:ok, sequence_server: sequence_server}
   end
 

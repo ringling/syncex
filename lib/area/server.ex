@@ -4,16 +4,19 @@ defmodule Syncex.Area.Server do
 
   #####
   # External API
-  def start_link do
-    GenServer.start_link(__MODULE__, :ok)
-  end
-
   def start_link(name) do
     GenServer.start_link(__MODULE__, :ok, name: name)
   end
 
+  def start_link(name, %{areas: areas}) do
+    GenServer.start_link(__MODULE__, areas, [name: name])
+  end
+
   def init(:ok) do
-    areas = fetch_all_areas
+    fetch_all_areas |> init
+  end
+
+  def init(areas) do
     Logger.info "Area server started - #{HashDict.size(areas)} area(s) loaded"
     {:ok, areas}
   end
