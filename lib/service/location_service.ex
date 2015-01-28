@@ -9,13 +9,12 @@ defmodule LocationService do
       {:error, err} ->
         {:error, err}
       location ->
-        location = Syncex.Sanitizer.sanitize(%{location: location})
-        location["postal_code"]
-          |> enrich(location, country, uuid)
+        location
+          |> Syncex.LocationSanitizer.sanitize
+          |> LocationValidator.validate(country)
+          |> enrich(country, uuid)
     end
   end
-
-
 
   def max_sequence_number do
     max = location_types
@@ -28,13 +27,9 @@ defmodule LocationService do
     System.get_env["LOCATION_TYPES"] |> String.split(",")
   end
 
-  # Ignore danish Skåne locations
-  defp enrich(postal_code, _, "dk", _) when byte_size(postal_code) > 4 do
-    { :error, :danish_skaane_location }
-  end
-
-  defp enrich(postal_code, location, country, uuid) do
-    pd = Syncex.Area.Server.postal_district(String.to_atom(country), postal_code)
+  defp enrich({ :error, error }, _, _),  do: { :error, error }
+  defp enrich(location, country, uuid)   do
+    pd = Syncex.Area.Server.postal_district(String.to_atom(country), location["postal_code"])
     location = location
       |> Map.put(:uuid, uuid)
       |> Map.put(:country, country)
