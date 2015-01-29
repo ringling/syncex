@@ -1,14 +1,14 @@
-defmodule Syncex.Sanitizer do
+defmodule Syncex.LocationSanitizer do
 
   @doc """
     Removes/replaces legacy and unclean location data
   """
-	def sanitize(%{location: location}) do
-		postal_code = location["postal_code"]
-			|> String.strip
-			|> adjust_postal_code
-		location |> Map.put("postal_code",postal_code)
-	end
+  def sanitize(location) do
+    postal_code = location["postal_code"]
+      |> String.strip
+      |> adjust_postal_code
+    location |> Map.put("postal_code",postal_code)
+  end
 
   defp adjust_postal_code("1404"), do: "1460"
   defp adjust_postal_code("1000"), do: "1455"
