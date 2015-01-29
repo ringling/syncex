@@ -16,16 +16,14 @@ defmodule ErrbitBackend do
 
   def handle_event(_, parent), do: {:ok, parent}
 
-  @doc """
-  <?xml version="1.0" encoding="UTF-8"?>
-  <notice version="2.3">
-    <api-key>...</api-key>
-    <notifier>...</notifier>
-    <error>...</error>
-    <request>...</request>
-    <server-environment>...</server-environment>
-  </notice>
-  """
+  # <?xml version="1.0" encoding="UTF-8"?>
+  # <notice version="2.3">
+  #   <api-key>...</api-key>
+  #   <notifier>...</notifier>
+  #   <error>...</error>
+  #   <request>...</request>
+  #   <server-environment>...</server-environment>
+  # </notice>
   defp xml(message, stackinfo) do
 
     request =
@@ -51,13 +49,11 @@ defmodule ErrbitBackend do
     URI.parse(System.get_env("ERRBIT_URL")).userinfo
   end
 
-  @doc """
-  <notifier>
-    <name>Curl Notifier</name>
-    <version>1.0.0</version>
-    <url>http://api.airbrake.io</url>
-  </notifier>
-  """
+  # <notifier>
+  #   <name>Curl Notifier</name>
+  #   <version>1.0.0</version>
+  #   <url>http://api.airbrake.io</url>
+  # </notifier>
   defp notifier do
     {:notifier, nil,
       [
@@ -68,13 +64,11 @@ defmodule ErrbitBackend do
     }
   end
 
-  @doc """
-  <server-environment>
-    <project-root>/testapp</project-root>
-    <environment-name>production</environment-name>
-    <app-version>1.0.0</app-version>
-  </server-environment>
-  """
+  # <server-environment>
+  #   <project-root>/testapp</project-root>
+  #   <environment-name>production</environment-name>
+  #   <app-version>1.0.0</app-version>
+  # </server-environment>
   defp server_environment do
     {:"server-environment", nil,
       [
@@ -85,17 +79,16 @@ defmodule ErrbitBackend do
     }
   end
 
-  @doc """
-  <request>
-    <url>http://example.com</url>
-    <component/>
-    <action/>
-    <cgi-data>
-      <var key="SERVER_NAME">example.org</var>
-      <var key="HTTP_USER_AGENT">Mozilla</var>
-    </cgi-data>
-  </request>
-  """
+
+  # <request>
+  #   <url>http://example.com</url>
+  #   <component/>
+  #   <action/>
+  #   <cgi-data>
+  #     <var key="SERVER_NAME">example.org</var>
+  #     <var key="HTTP_USER_AGENT">Mozilla</var>
+  #   </cgi-data>
+  # </request>
   defp request do
     {:request, nil,
       [
@@ -111,16 +104,14 @@ defmodule ErrbitBackend do
     }
   end
 
-  @doc """
-  <error>
-    <class>RuntimeError</class>
-    <message>RuntimeError: I've made a huge mistake</message>
-    <backtrace>
-      <line method="public" file="/testapp/app/models/user.rb" number="53"/>
-      <line method="index" file="/testapp/app/controllers/users_controller.rb" number="14"/>
-    </backtrace>
-  </error>
-  """
+  # <error>
+  #   <class>RuntimeError</class>
+  #   <message>RuntimeError: I've made a huge mistake</message>
+  #   <backtrace>
+  #     <line method="public" file="/testapp/app/models/user.rb" number="53"/>
+  #     <line method="index" file="/testapp/app/controllers/users_controller.rb" number="14"/>
+  #   </backtrace>
+  # </error>
   defp error(message, stackinfo) do
     function = fetch_function(stackinfo[:function])
     module = fetch_module(stackinfo[:module])
