@@ -2,7 +2,7 @@ defmodule ErrbitBackend do
   use GenEvent
   use Timex
 
-  def init({__MODULE__, name}) do
+  def init({__MODULE__, _name}) do
     {:ok, []}
   end
 

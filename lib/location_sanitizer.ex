@@ -15,7 +15,6 @@ defmodule Syncex.LocationSanitizer do
   defp adjust_postal_code("1258"), do: "1253"
   defp adjust_postal_code("1010"), do: "1160"
   defp adjust_postal_code("1016"), do: "1123"
-  defp adjust_postal_code("1016"), do: "1123"
   defp adjust_postal_code("1092"), do: "1060"
   defp adjust_postal_code("1002"), do: "1164"
   defp adjust_postal_code("1162"), do: "1159"

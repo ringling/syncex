@@ -55,7 +55,7 @@ defmodule Syncex.Area.Server do
     { :reply, postal_district, areas }
   end
 
-  defp find_postal_district([], postal_code, nil), do: nil
+  defp find_postal_district([], _, nil),                      do: nil
   defp find_postal_district([area | areas], postal_code, nil) do
     pd = area.postal_districts |> includes_postal_code?(postal_code)
     find_postal_district(areas, postal_code, pd)
@@ -68,11 +68,6 @@ defmodule Syncex.Area.Server do
 
   defp includes_postal_code?(postal_districts, postal_code) do
     postal_districts |> Enum.find(fn(pd)-> pd.postal_codes |> Map.has_key?(postal_code) end)
-  end
-
-  defp find_areas([], postal_code, found_in_areas), do: found_in_areas
-  defp find_areas([area | areas], postal_code, found_in_areas) do
-
   end
 
 end
