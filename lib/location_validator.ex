@@ -13,7 +13,7 @@ defmodule LocationValidator do
       is_nil(Map.get(coordinates, "lon", nil)) || is_nil(Map.get(coordinates, "lat", nil))
     validate_coordinates(location, invalid)
   end
-  defp validate_coordinates(location, true),  do: {:error, :invalid_coordinates}
+  defp validate_coordinates(_, true),         do: {:error, :invalid_coordinates}
   defp validate_coordinates(location, false), do: location
 
 
@@ -22,7 +22,7 @@ defmodule LocationValidator do
     validate_postal_code(location, location["postal_code"], country)
   end
 
-  def validate_postal_code(location, postal_code, "dk") when byte_size(postal_code) > 4 do
+  def validate_postal_code(_, postal_code, "dk") when byte_size(postal_code) > 4 do
     { :error, :danish_skaane_location }
   end
   def validate_postal_code(location, _, _), do: location

@@ -21,10 +21,10 @@ defmodule Syncex.DmsNotifier do
 
   def loop(dms_url, count) do
     receive do
-      {sender, :notify} ->
+      {_sender, :notify} ->
         notify(dms_url)
 
-      {sender, msg} ->
+      {_sender, msg} ->
         Logger.error msg
     end
     loop(dms_url, count+1)
@@ -32,7 +32,7 @@ defmodule Syncex.DmsNotifier do
 
   def notify(dms_url) do
     case HTTPotion.get(dms_url,[]) do
-      %HTTPotion.Response{status_code: 202, body: body} ->
+      %HTTPotion.Response{status_code: 202, body: _} ->
         Logger.debug "DMS notified - #{dms_url}"
       %HTTPotion.Response{status_code: sc, body: body} ->
         Logger.error "DMS error(#{sc}) -> #{dms_url} -> body #{inspect body}"

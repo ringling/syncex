@@ -2,7 +2,7 @@ defmodule Syncex.AreaServerTest do
   use ExUnit.Case, async: true
   alias Syncex.Area.Server
 
-  @pc_naerum @pc_naerum
+  @pc_naerum "2850"
 
   setup do
     {:ok, area_server} = Syncex.Area.Server.start_link(Syncex.Area.Server,%{areas: areas})

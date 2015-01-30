@@ -46,7 +46,8 @@ defmodule Syncex.Sequence.Server do
   def handle_call({ :set_sequence, new_seq_number }, _from, current_seq) do
     validate(current_seq, new_seq_number) |> reply(current_seq)
   end
-  def handle_call({ :force_set_sequence, new_seq_number }, _from, current_seq) do
+
+  def handle_call({ :force_set_sequence, new_seq_number }, _from, _) do
      { :reply, {:ok, new_seq_number }, new_seq_number }
   end
 
