@@ -4,6 +4,7 @@ defmodule Syncex.ChangeListener do
 
 
   @one_minute 60000
+  @heartbeat_timeout 30000
   ## Client API
 
   @doc """
@@ -29,7 +30,7 @@ defmodule Syncex.ChangeListener do
     last_seq = last_seq(state.sequence)
     { :ok, stream_ref } =
       CouchHelper.event_db
-      |> Couchex.follow([:continuous, :heartbeat, {:since, last_seq}, {:include_docs, true}])
+      |> Couchex.follow([:continuous, {:heartbeat, @heartbeat_timeout}, {:since, last_seq}, {:include_docs, true}])
     listen(stream_ref, state)
   end
 
