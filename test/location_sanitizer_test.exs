@@ -1,5 +1,5 @@
 defmodule Syncex.LocationSanitizerTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias Syncex.LocationSanitizer
 

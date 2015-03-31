@@ -1,5 +1,5 @@
 defmodule LocationValidatorTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
    test "valid location should pass" do
     assert dk_skaane_location == LocationValidator.validate(dk_skaane_location, "se")
