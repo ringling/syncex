@@ -45,11 +45,11 @@ defmodule Syncex.ChangeListener do
       {_stream_ref, error}->
         Logger.error "Error: #{inspect error}"
         wait(@one_minute)
-        listen(stream_ref, state)
+        listen(state) # Reconnect
       msg ->
         Logger.warn "Unknown msg: #{inspect msg}"
         wait(@one_minute)
-        listen(stream_ref, state)
+        listen(state) # Reconnect
     end
   end
 
