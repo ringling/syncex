@@ -3,7 +3,7 @@ defmodule Syncex.Mixfile do
 
   def project do
     [app: :syncex,
-     version: "0.0.1",
+     version: "0.0.4",
      elixir: "~> 1.0",
      deps: deps]
   end
