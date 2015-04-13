@@ -41,7 +41,7 @@ defmodule Syncex.ChangeListener do
         Logger.info "stopped, last seq is #{inspect l_seq}"
         :ok
       {_stream_ref, {:change, change}} ->
-        handle_change(state, change, Mix.env)
+        handle_change(state, change, Application.get_env(:syncex, :environment))
         listen(stream_ref, state)
       {_stream_ref, error}->
         Logger.error "Error: #{inspect error}"
