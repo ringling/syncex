@@ -11,7 +11,7 @@ defmodule Syncex.Mixfile do
   def application do
     [
       mod: {Syncex, []},
-      applications: [:logger, :couchex, :couchbeam, :httpotion, :jsx, :dotenv, :poison, :timex, :xml_builder],
+      applications: [:logger, :couchex, :couchbeam, :httpotion, :jsx, :dotenv, :poison, :timex, :xml_builder, :amqp],
       env: [version: Mix.Project.config[:version], app_path: Mix.Project.app_path, environment: Mix.env]
    ]
   end
@@ -25,6 +25,7 @@ defmodule Syncex.Mixfile do
       {:timex, "~> 0.13.3"},
       {:dotenv, "~> 0.0.4"},
       {:xml_builder, "~> 0.0.5"},
+      {:amqp, "0.1.0"},
       {:exrm, "~> 0.14.16"}
     ]
   end
