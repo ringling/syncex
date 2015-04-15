@@ -64,8 +64,7 @@ defmodule CouchHelper do
     end
   end
 
-  def execute_post({location, event_doc}) do
-    country = event_doc.country
+  def execute_post({location, country}) do
     { action, url } = couch_url(country, location) |> action
     json = Poison.Encoder.encode(location, [])
     try do

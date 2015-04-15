@@ -1,7 +1,7 @@
 # Syncex
 
 Synchronization of Lokalebasen lease and sales applications into CouchDb and ElasticSearch
-Synchronizations will be triggered directly or via CouchDB _changes streams
+Synchronizations will be triggered directly or via RabbitMQ messages
 
 
 
@@ -54,7 +54,6 @@ Run tests with `mix test --no-start`, to avoid starting the application
 COUCH_SERVER_URL=http://sofa.lokalebasen.dk:5984
 COUCH_USER=...
 COUCH_PASS=...
-COUCH_EVENTS=events
 COUCH_LOCATION_DB=locations
 DK_URL=http://www.lokalebasen.dk
 SE_URL=http://www.lokalbasen.se
@@ -63,7 +62,10 @@ LB_INTERNAL_API_KEY=...
 LOCATION_TYPES=lease,user,investment
 ERRBIT_API_KEY=...
 DEADMANS_SNITCH_URL=...
-
+RABBITMQ_URL=...
+RABBITMQ_EXCHANGE=lb
+RABBITMQ_QUEUE=syncex
+RABBITMQ_LOCATIONS_ROUTING_KEY=*.location.*
 ```
 
 ### CouchDB
