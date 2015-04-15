@@ -18,7 +18,6 @@ defmodule Syncex do
       worker(Syncex.Area.Server, [@area]),
       worker(GenServer, [@update_worker, %{sequence: @sequence}, [name: @update_worker]]),
       worker(Syncex.Sequence.Server, [@sequence]),
-      worker(Syncex.ChangeListener, [{@update_worker, @sequence}]),
       worker(Syncex.Status, [])
     ]
 

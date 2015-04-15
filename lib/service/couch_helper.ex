@@ -1,11 +1,6 @@
 defmodule CouchHelper do
   require Logger
 
-  def event_db do
-    { :ok, db } = Couchex.open_db(server, System.get_env("COUCH_EVENTS_DB"))
-    db
-  end
-
   def postal_areas_db(country) do
     database_name = "#{country}_#{System.get_env("COUCH_POSTAL_AREAS_DB")}"
     { :ok, db } = Couchex.open_db(server, database_name)
