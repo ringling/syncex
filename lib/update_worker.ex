@@ -10,6 +10,11 @@ defmodule Syncex.UpdateWorker do
     GenServer.start_link(__MODULE__,[state])
   end
 
+  def latest_synced_event, do: latest_synced_event(__MODULE__)
+  def latest_synced_event(server) do
+    GenServer.call(server, :latest_synced_event)
+  end
+
   def update(doc, seq_number), do: update(__MODULE__, doc, seq_number)
   def update(server, doc, seq_number) do
     GenServer.cast(server, {:update, {doc, seq_number}})
@@ -19,7 +24,12 @@ defmodule Syncex.UpdateWorker do
 
   def init(state) do
     Logger.info "UpdateWorker started"
+    state = state |> Map.put(:latest_synced_event, nil)
     {:ok, state}
+  end
+
+  def handle_call(:latest_synced_event, _from, state) do
+    {:reply, state.latest_synced_event, state}
   end
 
   def handle_cast({:update, {event_doc, seq_number} }, state) do
@@ -29,9 +39,12 @@ defmodule Syncex.UpdateWorker do
       |> add_metadata(event_doc, seq_number)
       |> update_location
       |> update_sequence(seq_number, state)
-
     Logger.info "Completed #{inspect event_doc.location_uuid} - seq #{seq_number}"
-    { :noreply, state }
+    { :noreply, set_latest_synced(state, event_doc) }
+  end
+
+  defp set_latest_synced(state, event_doc) do
+    state |> Map.put(:latest_synced_event, event_doc)
   end
 
   defp update_location({:error, err_message }), do: {:error, err_message }

@@ -18,10 +18,11 @@ defmodule Syncex do
       worker(Syncex.Area.Server, [@area]),
       worker(GenServer, [@update_worker, %{sequence: @sequence}, [name: @update_worker]]),
       worker(Syncex.Sequence.Server, [@sequence]),
-      worker(Syncex.ChangeListener, [{@update_worker, @sequence}])
+      worker(Syncex.ChangeListener, [{@update_worker, @sequence}]),
+      worker(Syncex.Status, [])
     ]
 
-    opts = [strategy: :one_for_one, name: Syncex.Supervisor]
+    opts = [strategy: :one_for_one, name: Syncex.Supervisor, max_restarts: 1000, max_seconds: 10]
     Supervisor.start_link(children, opts)
   end
 end

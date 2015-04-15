@@ -4,14 +4,53 @@ Synchronization of Lokalebasen lease and sales applications into CouchDb and Ela
 Synchronizations will be triggered directly or via CouchDB _changes streams
 
 
+
+
+## HealthCheck
+
+Call these processes, to perform a health and status check
+
+`iex --name syncex@192.168.1.152 --cookie monster -S mix`
+
+```elixir
+iex --name syncex_client@192.168.1.152 --cookie monster
+Node.ping(:"syncex@192.168.1.152")
+
+# Latest synced event
+GenServer.call({:global, Syncex.Status}, {:latest_synced_event, Syncex.UpdateWorker})
+
+# Check if in sync ?
+service = %{sequence_server: Syncex.Sequence.Server, location_service: LocationService}
+GenServer.call({:global, Syncex.Status}, {:in_sync?, service})
+```
+
+
+Starting Syncex with env set to :test, will disable calls to the handler but changes will still be received
+
+```elixir
+MIX_ENV=test iex --name syncex@192.168.1.152 --cookie monster -S mix
+```
+
+
+```elixir
+Syncex.Status.in_sync?
+
+LocationService.max_sequence_number
+
+Syncex.Sequence.Server.get_sequence
+
+Node.connect(:"syncex@192.168.1.152")
+
+```
+
 ## Test
-Run tests with `mix test --no-start` , to avoid starting the application
+Run tests with `mix test --no-start`, to avoid starting the application
 
 ## Requirements
 
 ### Environment variables
 
-```
+```shell
 COUCH_SERVER_URL=http://sofa.lokalebasen.dk:5984
 COUCH_USER=...
 COUCH_PASS=...

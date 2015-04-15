@@ -11,7 +11,7 @@ defmodule Syncex.AreaServerTest do
 
   test "find postal_district", %{area_server: area_server} do
     pd = %{area_ids: ["nordsj"], postal_district_id: @pc_naerum}
-    assert pd = Server.postal_district(area_server, :dk, @pc_naerum)
+    assert pd == Server.postal_district(area_server, :dk, @pc_naerum)
   end
 
   defp areas do

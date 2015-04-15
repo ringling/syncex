@@ -19,15 +19,16 @@ defmodule Syncex.ChangeListener do
   def init({worker, sequence}) do
     state = %{worker: worker, sequence: sequence}
     # TODO This has to be done more cleverly
-    spawn_link(Syncex.ChangeListener, :listen, [state])
+    spawn_link(Syncex.ChangeListener, :connect, [state])
     Logger.info "ChangeListener started - start seq #{last_seq(state.sequence)}"
     {:ok, state}
   end
 
   def init(:ok, state), do: {:ok, state}
 
-  def listen(state) do
+  def connect(state) do
     last_seq = last_seq(state.sequence)
+    Logger.debug("Connecting with sequence: #{last_seq}")
     { :ok, stream_ref } =
       CouchHelper.event_db
       |> Couchex.follow([:continuous, {:heartbeat, @heartbeat_timeout}, {:since, last_seq}, {:include_docs, true}])
@@ -40,16 +41,16 @@ defmodule Syncex.ChangeListener do
         Logger.info "stopped, last seq is #{inspect l_seq}"
         :ok
       {_stream_ref, {:change, change}} ->
-        handle_change(state, change)
+        handle_change(state, change, Application.get_env(:syncex, :environment))
         listen(stream_ref, state)
       {_stream_ref, error}->
         Logger.error "Error: #{inspect error}"
         wait(@one_minute)
-        listen(state) # Reconnect
+        listen(stream_ref, state)
       msg ->
         Logger.warn "Unknown msg: #{inspect msg}"
         wait(@one_minute)
-        listen(state) # Reconnect
+        listen(stream_ref, state)
     end
   end
 
@@ -59,7 +60,10 @@ defmodule Syncex.ChangeListener do
     Syncex.Sequence.Server.get_sequence(sequence_server)
   end
 
-  defp handle_change(state, change) do
+  defp handle_change(state, change, :test) do
+    Logger.debug("Change received -> #{inspect change}")
+  end
+  defp handle_change(state, change, _) do
     { seq, doc } = change |> Syncex.Event.doc
 
     case Syncex.Event.from_doc(doc) do

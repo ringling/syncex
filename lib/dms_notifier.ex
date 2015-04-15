@@ -8,7 +8,7 @@ defmodule Syncex.DmsNotifier do
 
   def init(interval_ms) do
     dms_url = System.get_env("DEADMANS_SNITCH_URL")
-    notify(dms_url)
+    notify(dms_url, Application.get_env(:syncex, :environment))
     notifier_pid = spawn_link(Syncex.DmsNotifier, :loop, [dms_url, 0])
     start_timer({interval_ms, notifier_pid})
     {:ok, interval_ms}
@@ -16,13 +16,13 @@ defmodule Syncex.DmsNotifier do
 
   def start_timer({interval_ms, notifier_pid}) do
     :timer.send_interval(interval_ms, notifier_pid, {self, :notify })
-    Logger.info "DmsNotifier Timer started - interval_ms #{interval_ms}"
+    Logger.info "DmsNotifier Timer started - interval_ms #{interval_ms} #{Application.get_env(:syncex, :environment)}"
   end
 
   def loop(dms_url, count) do
     receive do
       {_sender, :notify} ->
-        notify(dms_url)
+        notify(dms_url, Application.get_env(:syncex, :environment))
 
       {_sender, msg} ->
         Logger.error msg
@@ -30,7 +30,10 @@ defmodule Syncex.DmsNotifier do
     loop(dms_url, count+1)
   end
 
-  def notify(dms_url) do
+  def notify(dms_url, :test) do
+    Logger.debug "DMS would have been notified(TEST) - #{dms_url}"
+  end
+  def notify(dms_url, _) do
     case HTTPotion.get(dms_url,[]) do
       %HTTPotion.Response{status_code: 202, body: _} ->
         Logger.debug "DMS notified - #{dms_url}"
