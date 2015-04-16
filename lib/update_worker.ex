@@ -15,9 +15,9 @@ defmodule Syncex.UpdateWorker do
     GenServer.call(server, :latest_synced_event)
   end
 
-  def update(doc, seq_number), do: update(__MODULE__, doc, seq_number)
-  def update(server, doc, seq_number) do
-    GenServer.cast(server, {:update, {doc, seq_number}})
+  def update(change), do: update(__MODULE__, change)
+  def update(server, change) do
+    GenServer.cast(server, {:update, change})
   end
 
   ## Server Callbacks
@@ -32,15 +32,17 @@ defmodule Syncex.UpdateWorker do
     {:reply, state.latest_synced_event, state}
   end
 
-  def handle_cast({:update, {event_doc, seq_number} }, state) do
-    Logger.debug "#{event_doc.country}: Upserting #{inspect event_doc.location_uuid} - seq: #{seq_number} - evt_date: #{event_doc.created_at}"
-    {event_doc.location_uuid, event_doc.country}
-      |> LocationService.fetch_location
-      |> add_metadata(event_doc, seq_number)
-      |> update_location
-      |> update_sequence(seq_number, state)
-    Logger.info "Completed #{inspect event_doc.location_uuid} - seq #{seq_number}"
-    { :noreply, set_latest_synced(state, event_doc) }
+  def handle_cast({:update, change }, state) do
+    country = country(change.meta.routing_key)
+
+    Logger.debug "#{country}: Upserting #{inspect change.location["uuid"]}"
+    location_uuid = change.location["uuid"]
+    {location_uuid, country}
+    |> LocationService.fetch_location
+    |> add_metadata(change)
+    |> update_location
+    Logger.info "Completed #{inspect location_uuid} - #{change.location["address_line1"]}"
+    { :noreply, set_latest_synced(state, change) }
   end
 
   defp set_latest_synced(state, event_doc) do
@@ -48,44 +50,26 @@ defmodule Syncex.UpdateWorker do
   end
 
   defp update_location({:error, err_message }), do: {:error, err_message }
-  defp update_location(loc_doc), do:  execute_post(loc_doc)
+  defp update_location({location, country}), do:  execute_post({location, country})
 
-  defp add_metadata({ :error, err_message }, _, _), do: {:error, err_message }
-  defp add_metadata({ :ok, location }, event_doc,  seq_number) do
-    Logger.debug "'#{location["address_line1"]}, #{location["postal_code"]} #{location["postal_name"]}' -> #{location["_links"]["self"]["href"]}"
+  defp add_metadata({ :error, err_message }, _), do: {:error, err_message }
+  defp add_metadata({ :ok, location }, change)    do
     metadata = %{
-      type: "location_event_metadata",
-      seq_number: seq_number,
-      event_uuid: event_doc.id,
-      event_date: event_doc.created_at,
+      type: change.meta.type,
+      message_id: change.meta.message_id,
+      timestamp: change.meta.timestamp,
       updated_date: DateFormat.format!(Date.local, "{ISO}")
     }
 
     location = location
       |> Map.put(:metadata, metadata)
 
-    { location, event_doc }
+    {location, country(change.meta.routing_key)}
   end
 
-  defp update_sequence({ :ok, _status }, seq_number, state) do
-    state.sequence
-      |> Syncex.Sequence.Server.set_sequence(seq_number)
-    	|> handle_sequence_response(state)
-  end
-
-  defp update_sequence({:error, msg }, seq_number, state) do
-    # TODO: Add location to error queue
-    state.sequence
-      |> Syncex.Sequence.Server.set_sequence(seq_number)
-      |> handle_sequence_response(state)
-  end
-
-  defp handle_sequence_response({:ok, updated_seq_number }, _state), do: updated_seq_number
-  defp handle_sequence_response({:error, err_msg, failed_seq_number }, state) do
-    # TODO: Notify somebody about sequence_error and force set
-    Logger.error(err_msg)
-    state.sequence
-      |> Syncex.Sequence.Server.force_set_sequence(failed_seq_number)
+  defp country(routing_key) do
+    [_, country, _type, _event] = Regex.run(~r/(.*)\.(.*)\.(.*)/, routing_key)
+    country
   end
 
 end
