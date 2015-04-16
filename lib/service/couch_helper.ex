@@ -72,28 +72,28 @@ defmodule CouchHelper do
         %HTTPotion.Response{status_code: 201, body: body} ->
           resp = body |> Poison.decode!
           id = resp["id"]
-          Logger.info "Location(#{country}) #{action} #{id}"
+          Logger.info "Couch POST: #{action} #{id}"
           { :ok, :created }
         %HTTPotion.Response{status_code: 200, body: body} ->
           resp = body |> Poison.decode!
           id = resp["id"]
-          Logger.info "Location(#{country}) #{action} #{id}"
+          Logger.info "Couch POST: #{action} #{id}"
           IO.inspect body |> Poison.decode!
           { :ok, :updated }
         %HTTPotion.Response{status_code: 409} ->
-          Logger.error "CONFLICT Location(#{country}) #{location.uuid}"
+          Logger.error "Couch POST: CONFLICT #{location.uuid}"
           {:error, :conflict}
         %HTTPotion.Response{status_code: 404} ->
-          Logger.error "NOT FOUND Location(#{country}) #{location.uuid}"
+          Logger.error "Couch POST: NOT FOUND #{location.uuid}"
           {:error, :not_found}
         %HTTPotion.Response{status_code: 400} ->
-          Logger.error "INVALID REQUEST Location(#{country}) #{location.uuid}"
+          Logger.error "Couch POST: INVALID REQUEST #{location.uuid}"
           {:error, :invalid_request}
         %HTTPotion.Response{status_code: 500} ->
-          Logger.error "SERVER ERROR Location(#{country}) #{location.uuid}"
+          Logger.error "Couch POST: SERVER ERROR #{location.uuid}"
           {:error, :server_error}
         error ->
-          {:error, "Unknown: #{inspect error}"}
+          {:error, "Couch POST: Unknown -> #{inspect error}"}
       end
     rescue
       e in HTTPotion.HTTPError -> {:error, e.message }
