@@ -13,11 +13,38 @@ defmodule Syncex.LocationListener do
     GenServer.start_link(__MODULE__, state, name: name)
   end
 
-  def location_event(location, meta),         do: location_event(__MODULE__, location, meta)
-  def location_event(server, location, meta), do: GenServer.call(server, {:location_event, location, meta})
+  def location_event(payload, meta),         do: location_event(__MODULE__, payload, meta)
+  def location_event(server, payload, meta), do: GenServer.call(server, {:location_event, %{payload: payload, meta: meta}})
 
    ## Server Callbacks
   def init(state) do
+    subscribe_to_mq_events(state)
+    {:ok, state}
+  end
+
+  def handle_call({:location_event, change}, _from, state) do
+    resp = change.meta.type |> Syncex.Event.is_valid_event? |> handle_change(state.worker, change, env)
+    {:reply, resp, state}
+  end
+
+  defp handle_change(true, _, change, :test) do
+    location = change.payload |> Poison.decode!
+    Logger.info "Rabbit Location Event received -> #{inspect change.meta.routing_key}"
+    Logger.debug inspect "#{change.location["address_line1"]}, #{ change.location["postal_code"]} #{ change.location["postal_name"]}"
+    Logger.debug inspect change.location["uuid"]
+    :ok
+  end
+  defp handle_change(true, worker, change, _) do
+    location = change.payload |> Poison.decode!
+    worker |> Syncex.UpdateWorker.update(%{location: location, meta: change.meta})
+  end
+  defp handle_change(false, _, change, _), do: Logger.debug "Ignoring event #{inspect change.meta}"
+
+  defp env, do: Application.get_env(:syncex, :environment)
+
+  defp rabbit_mq_url, do: System.get_env("RABBITMQ_URL")
+
+  defp subscribe_to_mq_events(state) do
     {:ok, conn} = Connection.open(rabbit_mq_url)
     {:ok, chan} = Channel.open(conn)
 
@@ -25,30 +52,8 @@ defmodule Syncex.LocationListener do
     AMQP.Exchange.declare(chan, state.exchange, :topic, [auto_delete: false, durable: true])
     AMQP.Queue.bind(chan, state.queue, state.exchange, [routing_key: state.routing_key])
     AMQP.Queue.subscribe(chan, state.queue, fn(payload, meta) ->
-      location = payload |> Poison.decode!
-      Syncex.LocationListener.location_event(location, meta)
+      Syncex.LocationListener.location_event(payload, meta)
     end)
-
-    {:ok, state}
   end
-
-  def handle_call({:location_event, location, meta}, _from, state) do
-    change = %{location: location, meta: meta}
-    resp = handle_change(state, change, Application.get_env(:syncex, :environment))
-    {:reply, resp, state}
-  end
-
-  defp handle_change(state, change, :test) do
-    Logger.info "Rabbit Location Event received -> #{inspect change.meta.routing_key}"
-    Logger.debug inspect "#{change.location["address_line1"]}, #{ change.location["postal_code"]} #{ change.location["postal_name"]}"
-    Logger.debug inspect change.location["uuid"]
-    :ok
-  end
-
-  defp handle_change(state, change, _) do
-    state.worker |> Syncex.UpdateWorker.update(change)
-  end
-
-  defp rabbit_mq_url, do: System.get_env("RABBITMQ_URL")
 
 end
