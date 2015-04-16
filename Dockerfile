@@ -17,4 +17,4 @@ RUN yes | mix deps.get    &&\
     mix compile.protocols &&\
     mix release
 
-CMD ["rel/syncex/bin/syncex", "foreground"]
+CMD ["./start.sh"]
