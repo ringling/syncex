@@ -38,7 +38,7 @@ defmodule Syncex.LocationListener do
     location = location(change)
     worker |> Syncex.UpdateWorker.update(%{location: location, meta: change.meta})
   end
-  defp handle_change(false, _, change, _), do: Logger.debug "Ignoring event #{inspect change.meta}"
+  defp handle_change(false, _, change, _), do: Logger.debug "Ignoring event #{inspect change.meta.type}"
 
   defp env, do: Application.get_env(:syncex, :environment)
 
