@@ -26,14 +26,8 @@ defmodule Syncex.UpdateWorker do
     Logger.info "UpdateWorker started"
     state = state
       |> Map.put(:latest_synced_event, nil)
-      |> Map.put(:channel, open_channel)
+      |> Map.put(:channel, RabbitHelper.open_channel)
     {:ok, state}
-  end
-
-  defp open_channel do
-    {:ok, conn} = AMQP.Connection.open(System.get_env("RABBITMQ_URL"))
-    {:ok, chan} = AMQP.Channel.open(conn)
-    chan
   end
 
   def handle_call(:latest_synced_event, _from, state) do

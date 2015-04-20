@@ -42,11 +42,8 @@ defmodule Syncex.LocationListener do
 
   defp env, do: Application.get_env(:syncex, :environment)
 
-  defp rabbit_mq_url, do: System.get_env("RABBITMQ_URL")
-
   defp subscribe_to_mq_events(state) do
-    {:ok, conn} = Connection.open(rabbit_mq_url)
-    {:ok, chan} = Channel.open(conn)
+    chan = RabbitHelper.open_channel
 
     AMQP.Queue.declare(chan, state.queue)
     AMQP.Exchange.declare(chan, state.exchange, :topic, [auto_delete: false, durable: true])
