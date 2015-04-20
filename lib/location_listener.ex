@@ -28,14 +28,14 @@ defmodule Syncex.LocationListener do
   end
 
   defp handle_change(true, _, change, :test) do
-    location = change.payload |> Poison.decode!
+    location = location(change)
     Logger.info "Rabbit Location Event received -> #{inspect change.meta.routing_key}"
-    Logger.debug inspect "#{change.location["address_line1"]}, #{ change.location["postal_code"]} #{ change.location["postal_name"]}"
-    Logger.debug inspect change.location["uuid"]
+    Logger.debug inspect "#{location["address_line1"]}, #{ location["postal_code"]} #{ location["postal_name"]}"
+    Logger.debug inspect location["uuid"]
     :ok
   end
   defp handle_change(true, worker, change, _) do
-    location = change.payload |> Poison.decode!
+    location = location(change)
     worker |> Syncex.UpdateWorker.update(%{location: location, meta: change.meta})
   end
   defp handle_change(false, _, change, _), do: Logger.debug "Ignoring event #{inspect change.meta}"
@@ -55,5 +55,7 @@ defmodule Syncex.LocationListener do
       Syncex.LocationListener.location_event(payload, meta)
     end)
   end
+
+  defp location(change), do: change.payload |> Poison.decode!
 
 end
