@@ -59,20 +59,17 @@ defmodule Syncex.UpdateWorker do
     json_msg = change.location |> Poison.Encoder.encode([]) |> IO.iodata_to_binary
     type = "location.synchronized"
     routing_key = "#{country}.#{type}"
-    AMQP.Basic.publish(state.channel, exchange, routing_key, json_msg, opts(type))
+    AMQP.Basic.publish(state.channel, state.exchange, routing_key, json_msg, opts(type, state.app_id))
   end
 
   defp dispatch_synchronized_event({:error, error}, change, state, country) do
     json_msg = %{change: change, error: error} |> Poison.Encoder.encode([]) |> IO.iodata_to_binary
     type = "location.synchronize_failed"
     routing_key = "#{country}.#{type}"
-    AMQP.Basic.publish(state.channel, exchange, routing_key, json_msg, opts(type))
+    AMQP.Basic.publish(state.channel, state.exchange, routing_key, json_msg, opts(type, state.app_id))
   end
 
-  defp app_id, do: "syncex"
-  defp opts(type), do: [persistent: true, type: type, app_id: app_id, content_type: "application/json"]
-
-  defp exchange, do: System.get_env("RABBITMQ_EXCHANGE") || "lb"
+  defp opts(type, app_id), do: [persistent: true, type: type, app_id: app_id, content_type: "application/json"]
 
   defp add_metadata({ :error, err_message }, _), do: {:error, err_message }
   defp add_metadata({ :ok, location }, change)    do

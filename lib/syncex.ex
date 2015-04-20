@@ -2,7 +2,6 @@ defmodule Syncex do
   use Application
 
   @update_worker Syncex.UpdateWorker
-  @sequence Syncex.Sequence.Server
   @area Syncex.Area.Server
   @location_service LocationService
   @location_listener Syncex.LocationListener
@@ -13,15 +12,15 @@ defmodule Syncex do
 
     Dotenv.load!
 
-
-    location_listener_state = %{exchange: exchange, queue: queue, routing_key: routing_key, worker: @update_worker}
+    rabbit_opts = %{exchange: exchange, queue: queue, routing_key: routing_key, app_id: "syncex"}
+    ll_opts = rabbit_opts |> Map.put(:worker, @update_worker)
 
     children = [
       worker(Syncex.DmsNotifier, [@ten_minutes]),
       worker(Syncex.Area.Server, [@area]),
-      worker(GenServer, [@update_worker, %{sequence: @sequence}, [name: @update_worker]]),
+      worker(GenServer, [@update_worker, rabbit_opts, [name: @update_worker]]),
       worker(Syncex.Sequence.Server, [@sequence]),
-      worker(Syncex.LocationListener, [location_listener_state, [name: @location_listener]]),
+      worker(Syncex.LocationListener, [ll_opts, [name: @location_listener]]),
       worker(Syncex.Status, [])
     ]
 
