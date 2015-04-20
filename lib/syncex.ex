@@ -19,7 +19,6 @@ defmodule Syncex do
       worker(Syncex.DmsNotifier, [@ten_minutes]),
       worker(Syncex.Area.Server, [@area]),
       worker(GenServer, [@update_worker, rabbit_opts, [name: @update_worker]]),
-      worker(Syncex.Sequence.Server, [@sequence]),
       worker(Syncex.LocationListener, [ll_opts, [name: @location_listener]]),
       worker(Syncex.Status, [])
     ]
