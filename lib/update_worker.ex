@@ -41,11 +41,15 @@ defmodule Syncex.UpdateWorker do
     location_uuid = change.location["uuid"]
     :ok = {location_uuid, country}
     |> LocationService.fetch_location
-    |> add_metadata(change)
-    |> update_location
-    |> dispatch_synchronized_event(change, state, country)
-    Logger.info "Completed #{inspect location_uuid} - #{change.location["address_line1"]}"
+    |> RabbitHelper.add_metadata(change)
+    |> CouchHelper.update_location
+    |> RabbitHelper.dispatch_synchronized_event(change, state, country)
+    Logger.info "Completed #{inspect location_uuid} - #{address(change.location)}"
     { :noreply, set_latest_synced(state, change) }
+  end
+
+  defp address(location) do
+    "#{location["address_line_1"] || location["address_line1"]}, #{location["postal_code"]} #{location["postal_name"]}"
   end
 
   defp set_latest_synced(state, event_doc) do
