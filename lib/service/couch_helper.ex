@@ -36,14 +36,18 @@ defmodule CouchHelper do
     Couchex.server_connection(couchdb_url, [{:basic_auth, {user, pass}}])
   end
 
-  def couch_url(country, location) do
-    server_url = System.get_env("COUCH_SERVER_URL")
-    country = country |> String.upcase
-    type = location["type"] |> String.downcase
-    locations_db = type <> "_" <> System.get_env("COUCH_LOCATIONS_DB")
-    url = "#{server_url}/#{locations_db}/#{location.uuid}"
+  def couch_url(location) do
+    url = "#{server_url}/#{locations_db(location)}/#{location.uuid}"
     add_revision(url)
   end
+
+  defp locations_db(location) do
+    category = location["type"] |> String.downcase
+    category <> "_" <> System.get_env("COUCH_LOCATIONS_DB")
+  end
+
+  def update_location({:error, err_message }), do: {:error, err_message}
+  def update_location(location), do:  execute_post(location)
 
   def execute_get(url, api_key) do
     try do
@@ -64,8 +68,8 @@ defmodule CouchHelper do
     end
   end
 
-  def execute_post({location, country}) do
-    { action, url } = couch_url(country, location) |> action
+  def execute_post(location) do
+    {action, url} = couch_url(location) |> action
     json = Poison.Encoder.encode(location, [])
     try do
       case HTTPotion.put(url, json,["Content-Type": "application/json"]) do
@@ -73,36 +77,36 @@ defmodule CouchHelper do
           resp = body |> Poison.decode!
           id = resp["id"]
           Logger.info "Couch POST: #{action} #{id}"
-          { :ok, :created }
+          { :ok, action, location}
         %HTTPotion.Response{status_code: 200, body: body} ->
           resp = body |> Poison.decode!
           id = resp["id"]
           Logger.info "Couch POST: #{action} #{id}"
           IO.inspect body |> Poison.decode!
-          { :ok, :updated }
+          {:ok, action, location}
         %HTTPotion.Response{status_code: 409} ->
           Logger.error "Couch POST: CONFLICT #{location.uuid}"
-          {:error, :conflict}
+          {:error, :conflict, location}
         %HTTPotion.Response{status_code: 404} ->
           Logger.error "Couch POST: NOT FOUND #{location.uuid}"
-          {:error, :not_found}
+          {:error, :not_found, location}
         %HTTPotion.Response{status_code: 400} ->
           Logger.error "Couch POST: INVALID REQUEST #{location.uuid}"
-          {:error, :invalid_request}
+          {:error, :invalid_request, location}
         %HTTPotion.Response{status_code: 500} ->
           Logger.error "Couch POST: SERVER ERROR #{location.uuid}"
-          {:error, :server_error}
+          {:error, :server_error, location}
         error ->
-          {:error, "Couch POST: Unknown -> #{inspect error}"}
+          {:error, "Couch POST: Unknown -> #{inspect error}", location}
       end
     rescue
-      e in HTTPotion.HTTPError -> {:error, e.message }
-      e in RuntimeError -> {:error, e}
-      e in Error -> {:error, "Unknown error #{inspect e}"}
+      e in HTTPotion.HTTPError -> {:error, e.message, location}
+      e in RuntimeError -> {:error, e, location}
+      e in Error -> {:error, "Unknown error #{inspect e}", location}
     end
-    { :ok, :update }
-
   end
+
+  defp server_url, do: System.get_env("COUCH_SERVER_URL")
 
   defp action({ :error,       err }), do: { :error,  err }
   defp action({ :no_revision, url }), do: { :create, url }
