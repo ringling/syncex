@@ -26,7 +26,8 @@ defmodule Syncex.Mixfile do
       {:dotenv, "~> 0.0.4"},
       {:xml_builder, "~> 0.0.5"},
       {:amqp, "0.1.0"},
-      {:exrm, "~> 0.14.16"}
+      {:exrm, "~> 0.14.16"},
+      {:mock, "~> 0.1.0"}
     ]
   end
 end
