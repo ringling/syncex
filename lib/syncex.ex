@@ -12,7 +12,7 @@ defmodule Syncex do
 
     Dotenv.load!
 
-    rabbit_opts = %{exchange: exchange, queue: queue, routing_key: routing_key, app_id: "syncex"}
+    rabbit_opts = %{exchange: exchange, queue: queue, routing_keys: routing_keys, app_id: "syncex"}
     ll_opts = rabbit_opts |> Map.put(:worker, @update_worker)
 
     children = [
@@ -27,7 +27,12 @@ defmodule Syncex do
     Supervisor.start_link(children, opts)
   end
 
-  defp routing_key, do: System.get_env("RABBITMQ_LOCATIONS_ROUTING_KEY") || "*.location.*"
+  defp routing_keys do
+    [
+      (System.get_env("RABBITMQ_LOCATIONS_ROUTING_KEY") || "*.location.*"),
+      (System.get_env("RABBITMQ_PROPERTY_ROUTING_KEY") || "*.property.*")
+    ]
+  end
 
   defp exchange, do: System.get_env("RABBITMQ_EXCHANGE") || "lb"
 
