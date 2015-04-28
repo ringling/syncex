@@ -10,11 +10,15 @@ defmodule Syncex.Mixfile do
 
   def application do
     [
-      mod: {Syncex, []},
-      applications: [:logger, :couchex, :couchbeam, :httpotion, :jsx, :dotenv, :poison, :timex, :xml_builder, :amqp],
+      mod: { Syncex, [] },
+      applications: app_list(Mix.env),
       env: [version: Mix.Project.config[:version], app_path: Mix.Project.app_path, environment: Mix.env]
-   ]
+    ]
   end
+
+  defp app_list(:dev), do: [:dotenv | app_list]
+  defp app_list(_), do: app_list
+  defp app_list, do: [:logger, :couchex, :couchbeam, :httpotion, :jsx, :poison, :timex, :xml_builder, :amqp]
 
   defp deps do
     [
