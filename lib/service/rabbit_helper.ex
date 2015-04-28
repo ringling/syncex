@@ -4,12 +4,12 @@ defmodule RabbitHelper do
   use Timex
 
   def open_channel do
-    {:ok, conn} = Connection.open(rabbit_mq_url)
+    {:ok, conn} = Settings.Rabbit.server_url |> Connection.open
     {:ok, chan} = Channel.open(conn)
     chan
   end
 
-  def dispatch_synchronized_event({:ok, _couch_evt, location}, change, state, country) do
+  def dispatch_synchronized_event({:ok, _evt, location}, change, state, country) do
     json_msg = change.location |> Poison.Encoder.encode([]) |> IO.iodata_to_binary
     evt_type = "#{type(location["type"])}.synchronized"
     routing_key = "#{country}.#{evt_type}"
@@ -53,7 +53,5 @@ defmodule RabbitHelper do
   defp type("investment"),  do: "property"
 
   defp opts(evt_type, app_id), do: [persistent: true, type: evt_type, app_id: app_id, content_type: "application/json"]
-
-  defp rabbit_mq_url, do: System.get_env("RABBITMQ_URL")
 
 end

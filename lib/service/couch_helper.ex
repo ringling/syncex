@@ -2,14 +2,13 @@ defmodule CouchHelper do
   require Logger
 
   def postal_areas_db(country) do
-    database_name = "#{country}_#{System.get_env("COUCH_POSTAL_AREAS_DB")}"
+    database_name = "#{country}_#{Settings.Couch.postal_areas_db}"
     { :ok, db } = Couchex.open_db(server, database_name)
     db
   end
 
   def server do
-    (System.get_env["COUCH_SERVER_URL"] || "http://localhost:5984")
-      |> Couchex.server_connection([])
+    server_url |> Couchex.server_connection([])
   end
 
   def ping do
@@ -30,10 +29,9 @@ defmodule CouchHelper do
   end
 
   def server_connection do
-    couchdb_url = System.get_env["COUCH_SERVER_URL"]
-    user = System.get_env["COUCH_USER"]
-    pass = System.get_env["COUCH_PASS"]
-    Couchex.server_connection(couchdb_url, [{:basic_auth, {user, pass}}])
+    user = Settings.Couch.user
+    pass = Settings.Couch.pass
+    server_url |> Couchex.server_connection([{:basic_auth, {user, pass}}])
   end
 
   def couch_url(location) do
@@ -43,10 +41,10 @@ defmodule CouchHelper do
 
   defp locations_db(location) do
     category = location["type"] |> String.downcase
-    category <> "_" <> System.get_env("COUCH_LOCATIONS_DB")
+    category <> "_" <> Settings.Couch.locations_db
   end
 
-  def update_location({:error, err_message }), do: {:error, err_message}
+  def update_location({:error, err_message}), do: {:error, err_message}
   def update_location(location), do:  execute_post(location)
 
   def execute_get(url, api_key) do
@@ -106,7 +104,7 @@ defmodule CouchHelper do
     end
   end
 
-  defp server_url, do: System.get_env("COUCH_SERVER_URL")
+  defp server_url, do: Settings.Couch.server_url
 
   defp action({ :error,       err }), do: { :error,  err }
   defp action({ :no_revision, url }), do: { :create, url }

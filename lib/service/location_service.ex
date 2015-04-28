@@ -24,6 +24,6 @@ defmodule LocationService do
     { :ok, location }
   end
 
-  defp api_key, do: System.get_env("LB_INTERNAL_API_KEY")
+  defp api_key, do: Settings.InternalApi.api_key
 
 end
