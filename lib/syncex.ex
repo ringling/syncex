@@ -2,7 +2,6 @@ defmodule Syncex do
   use Application
 
   @update_worker Syncex.UpdateWorker
-  @sequence Syncex.Sequence.Server
   @area Syncex.Area.Server
   @location_service LocationService
   @location_listener Syncex.LocationListener
@@ -11,17 +10,14 @@ defmodule Syncex do
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
-    Dotenv.load!
-
-
-    location_listener_state = %{exchange: exchange, queue: queue, routing_key: routing_key, worker: @update_worker}
+    rabbit_opts = %{exchange: exchange, queue: queue, routing_keys: routing_keys, app_id: "syncex"}
+    ll_opts = rabbit_opts |> Map.put(:worker, @update_worker)
 
     children = [
       worker(Syncex.DmsNotifier, [@ten_minutes]),
       worker(Syncex.Area.Server, [@area]),
-      worker(GenServer, [@update_worker, %{sequence: @sequence}, [name: @update_worker]]),
-      worker(Syncex.Sequence.Server, [@sequence]),
-      worker(Syncex.LocationListener, [location_listener_state, [name: @location_listener]]),
+      worker(GenServer, [@update_worker, rabbit_opts, [name: @update_worker]]),
+      worker(Syncex.LocationListener, [ll_opts, [name: @location_listener]]),
       worker(Syncex.Status, [])
     ]
 
@@ -29,10 +25,8 @@ defmodule Syncex do
     Supervisor.start_link(children, opts)
   end
 
-  defp routing_key, do: System.get_env("RABBITMQ_LOCATIONS_ROUTING_KEY") || "*.location.*"
-
-  defp exchange, do: System.get_env("RABBITMQ_EXCHANGE") || "lb"
-
-  defp queue, do: System.get_env("RABBITMQ_QUEUE") || "syncex"
+  defp routing_keys, do: Settings.Rabbit.routing_keys
+  defp exchange, do: Settings.Rabbit.exchange
+  defp queue, do: Settings.Rabbit.queue
 
 end

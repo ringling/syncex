@@ -9,7 +9,7 @@ defmodule AreaService do
 
 	defp db_name(country) do
 		country = country |> String.upcase
-		areas_db = "#{country}_#{System.get_env("COUCH_POSTAL_AREAS_DB")}"
+		areas_db = "#{country}_#{Settings.Couch.postal_areas_db}"
 	end
 
   defp fetch_docs(docs) do
