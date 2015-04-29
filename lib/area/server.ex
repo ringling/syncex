@@ -27,7 +27,7 @@ defmodule Syncex.Area.Server do
   end
 
   defp fetch_all_areas do
-    add_areas([:dk, :se], HashDict.new)
+    add_areas([:dk, :se, :no], HashDict.new)
   end
 
   defp add_areas([], all_areas), do: all_areas
