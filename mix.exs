@@ -19,7 +19,7 @@ defmodule Syncex.Mixfile do
   defp app_list(:dev), do: [:dotenv | app_list]
   defp app_list(:test), do: [:dotenv | app_list]
   defp app_list(_), do: app_list
-  defp app_list, do: [:logger, :couchex, :couchbeam, :httpotion, :jsx, :poison, :timex, :xml_builder, :amqp]
+  defp app_list, do: [:logger, :couchex, :couchbeam, :httpotion, :jsx, :poison, :timex, :xml_builder, :amqp, :raven]
 
   defp deps do
     [
