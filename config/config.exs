@@ -1,10 +1,16 @@
 use Mix.Config
 
+config :raven,
+  dsn: System.get_env["SENTRY_DSN"],
+  tags: %{
+    env: "production"
+  }
+
 config :logger,
   backends: [
       {LoggerFileBackend, :error_log},
       {LoggerFileBackend, :info_log},
-      {ErrbitBackend, :error_log},
+      {Raven, :error_log},
       :console
     ],
   level: :debug,
