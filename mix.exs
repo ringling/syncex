@@ -17,6 +17,7 @@ defmodule Syncex.Mixfile do
   end
 
   defp app_list(:dev), do: [:dotenv | app_list]
+  defp app_list(:test), do: [:dotenv | app_list]
   defp app_list(_), do: app_list
   defp app_list, do: [:logger, :couchex, :couchbeam, :httpotion, :jsx, :poison, :timex, :xml_builder, :amqp]
 
@@ -25,13 +26,15 @@ defmodule Syncex.Mixfile do
       {:ibrowse, github: "cmullaparthi/ibrowse", tag: "v4.1.0"},
       {:httpotion, "~> 1.0.0"},
       {:couchex, github: "ringling/couchex"},
-      {:poison, github: "devinus/poison"},
+      {:poison, "~> 1.4.0", override: true},
       {:timex, "~> 0.13.3"},
+      {:hackney, "~> 1.1.0", override: true},
       {:dotenv, "~> 0.0.4"},
       {:xml_builder, "~> 0.0.5"},
       {:amqp, "0.1.0"},
       {:exrm, "~> 0.14.16"},
-      {:mock, "~> 0.1.0"}
+      {:mock, "~> 0.1.0"},
+      {:raven, github: "lokalebasen/raven-elixir"}
     ]
   end
 end

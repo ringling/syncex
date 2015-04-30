@@ -28,7 +28,7 @@ GenServer.call({:global, Syncex.Status}, {:in_sync?, service})
 Starting Syncex with env set to :test, will disable calls to the handler but changes will still be received
 
 ```elixir
-MIX_ENV=test iex --name syncex@192.168.1.152 --cookie monster -S mix
+SENTRY_DSN=https://user:pass@sentry.services.lokalebasen.dk/16 MIX_ENV=test iex --name syncex@192.168.1.152 --cookie monster -S mix
 ```
 
 
@@ -51,6 +51,7 @@ Run tests with `mix test --no-start`, to avoid starting the application
 ### Environment variables
 
 ```shell
+SENTRY_DSN="https://user:pass@sentry.services.lokalebasen.dk/16"
 COUCH_SERVER_URL=https://couch.lokalebasen.dk
 COUCH_USER=...
 COUCH_PASS=...
