@@ -2,6 +2,7 @@ defmodule Syncex.LocationSanitizer do
 
   @doc """
     Removes/replaces legacy and unclean location data
+    Aligns property data with location data for use in ElasticSearch
   """
   def sanitize(location) do
     location
