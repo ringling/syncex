@@ -17,13 +17,11 @@ defmodule RabbitHelper do
   end
 
   def dispatch_synchronized_event({:error, error}, change, state, country) do
-    Logger.error(inspect error)
     evt_type = "#{type_from_meta(change.meta.type)}.synchronize_failed"
     %{change: change, error: error} |> publish(state, country, evt_type)
   end
 
   def dispatch_synchronized_event({:error, error, location}, change, state, country) do
-    Logger.error(inspect error)
     evt_type = "#{type(location["type"])}.synchronize_failed"
     %{change: change, error: error} |> publish(state, country, evt_type)
   end

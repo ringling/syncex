@@ -53,10 +53,13 @@ defmodule CouchHelper do
         %HTTPotion.Response{status_code: 200, body: body} ->
           body |> Poison.decode!
         %HTTPotion.Response{status_code: 404} ->
+          Logger.error "#{__MODULE__}.execute_get: Not found(404), url: #{url}"
           {:error, :not_found}
         %HTTPotion.Response{status_code: 500} ->
+          Logger.error "#{__MODULE__}.execute_get: Server error(500), url: #{url}"
           {:error, :server_error}
         %HTTPotion.Response{status_code: 400} ->
+          Logger.error "#{__MODULE__}.execute_get: Invalid request(400), url: #{url}"
           {:error, :invalid_request}
       end
     rescue
@@ -74,28 +77,29 @@ defmodule CouchHelper do
         %HTTPotion.Response{status_code: 201, body: body} ->
           resp = body |> Poison.decode!
           id = resp["id"]
-          Logger.info "Couch POST: #{action} #{id}"
+          Logger.info "#{__MODULE__}.execute_post: #{action} #{id}"
           { :ok, action, location}
         %HTTPotion.Response{status_code: 200, body: body} ->
           resp = body |> Poison.decode!
           id = resp["id"]
-          Logger.info "Couch POST: #{action} #{id}"
+          Logger.info "#{__MODULE__}.execute_post: #{action} #{id}"
           IO.inspect body |> Poison.decode!
           {:ok, action, location}
         %HTTPotion.Response{status_code: 409} ->
-          Logger.error "Couch POST: CONFLICT #{location.uuid}"
+          Logger.error "#{__MODULE__}.execute_post: Conflict(409), url: #{url}"
           {:error, :conflict, location}
         %HTTPotion.Response{status_code: 404} ->
-          Logger.error "Couch POST: NOT FOUND #{location.uuid}"
+          Logger.error "#{__MODULE__}.execute_post: Not found(404), url: #{url}"
           {:error, :not_found, location}
         %HTTPotion.Response{status_code: 400} ->
-          Logger.error "Couch POST: INVALID REQUEST #{location.uuid}"
+          Logger.error "#{__MODULE__}.execute_post: Invalid request(400), url: #{url}"
           {:error, :invalid_request, location}
         %HTTPotion.Response{status_code: 500} ->
-          Logger.error "Couch POST: SERVER ERROR #{location.uuid}"
+          Logger.error "#{__MODULE__}.execute_post: Server error(500), url: #{url}"
           {:error, :server_error, location}
         error ->
-          {:error, "Couch POST: Unknown -> #{inspect error}", location}
+          Logger.error "#{__MODULE__}.execute_post: Unknown error '#{inspect error}', url: #{url}"
+          {:error, "#{__MODULE__}.execute_post: Unknown -> #{inspect error}", location}
       end
     rescue
       e in HTTPotion.HTTPError -> {:error, e.message, location}
@@ -122,7 +126,7 @@ defmodule CouchHelper do
         %HTTPotion.Response{status_code: 404, headers: headers} ->
           { :no_revision, url }
         error ->
-          Logger.error("Error during revision '#{url}' add: #{inspect error}")
+          Logger.error("#{__MODULE__}.add_revision error '#{inspect error}', url: #{url}")
           {:error, error}
       end
     rescue
