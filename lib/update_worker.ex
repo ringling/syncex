@@ -15,7 +15,7 @@ defmodule Syncex.UpdateWorker do
 
   def update(change), do: update(__MODULE__, change)
   def update(server, change) do
-    GenServer.cast(server, {:update, change})
+    GenServer.call(server, {:update, change})
   end
 
   ## Server Callbacks
@@ -32,7 +32,7 @@ defmodule Syncex.UpdateWorker do
     {:reply, state.latest_synced_event, state}
   end
 
-  def handle_cast({:update, change }, state) do
+  def handle_call({:update, change}, _from, state) do
     country = country(change.meta.routing_key)
     Logger.debug "#{country}(#{change.meta.type}): Upserting #{inspect change.location["uuid"]}"
     location_uuid = change.location["uuid"]
@@ -42,7 +42,7 @@ defmodule Syncex.UpdateWorker do
     |> CouchHelper.update_location
     |> RabbitHelper.dispatch_synchronized_event(change, state, country)
     Logger.info "Completed #{inspect location_uuid} - #{address(change.location)}"
-    { :noreply, set_latest_synced(state, change) }
+    {:reply, set_latest_synced(state, change), state}
   end
 
   defp address(location) do
